@@ -12,7 +12,7 @@ class BankAccount:
     def deposit(self, amount):
         if amount <= 0:
             return False, "invalid amount"
-        self.__balance += amount
+        self._balance += amount
         transaction = {
             "id" : f"T{len(self._transactions)+1}",
             "type" : "Deposited",
@@ -67,12 +67,12 @@ class CurrentAccount(BankAccount):
         self._balance -= amount
         transaction = {
             "id" : f"T{len(self._transactions)+1}",
-            "Type" : "Withrew",
-            "Amount" : amount,
-            "Time" : datetime.now().strftime('%H:%M')
+            "type" : "Withdrew",
+            "amount" : amount,
+            "time" : datetime.now().strftime('%H:%M')
         }
         self._transactions.append(transaction)
-        return True, transaction
+        return True, self._balance
 
 acc1 = SavingsAccount("Dhaya", 5000)
 print(acc1.deposit(5000))
