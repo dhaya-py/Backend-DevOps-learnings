@@ -3,30 +3,42 @@ from datetime import datetime
 class BankAccount:
     def __init__(self, name, balance):
         self.name = name
-        self.balance = balance
-        self.transactions = []
+        self.__balance = balance # private
+        self.__transactions = []
 
     def deposit(self, amount):
         if amount <= 0:
-            return "invalid amount"
-        self.balance += amount
-        self.transactions.append(f"Deposited : {amount} at {datetime.now().strftime('%H:%M:%S')}")
-        return self.balance
+            return False, "invalid amount"
+        self.__balance += amount
+        transaction = {
+            "id" : f"T{len(self.__transactions)+1}",
+            "type" : "Deposited",
+            "amount" : amount,
+            "time" : datetime.now().strftime('%H:%M')
+        }
+        self.__transactions.append(transaction)
+        return True, self.__balance
         
     def withdraw(self, amount):
         if amount <= 0:
-            return "invalid amount"
-        if amount > self.balance:
-            return ("Insufficient balance")            
-        self.balance -= amount
-        self.transactions.append(f"Withdrew : {amount} at {datetime.now().strftime('%H:%M:%S')}")
-        return self.balance
+            return False, "invalid amount"
+        if amount > self.__balance:
+            return False, "Insufficient balance"           
+        self.__balance -= amount
+        transaction = {
+            "id" : f"T{len(self.__transactions)+1}",
+            "type" : "Withdrew",
+            "amount" : amount,
+            "time" : datetime.now().strftime('%H:%M')
+        }
+        self.__transactions.append(transaction)
+        return True, self.__balance
 
     def transaction_history(self):
-        return self.transactions
+        return self.__transactions.copy()
         
     def check_balance(self):
-        return self.balance
+        return self.__balance
 
 name = input("Enter your name : ")
 balance = int(input("Enter your balance : "))
@@ -45,26 +57,36 @@ while True:
 
     if choice == "1":
         dep_amount = int(input("Enter your deposit amount : "))
-        user.deposit(dep_amount)
+        status, result = user.deposit(dep_amount)
         print(f"Deposit amount : {dep_amount}")
-        print(f"Current balance : {user.check_balance()}")
+        if status:
+            print(f"Success. Current balance : {result}")
+        else:
+            print(f"Error : {result}")
+
     elif choice == "2":
         with_amount = int(input("Enter your withdraw amount : "))
-        with_status = user.withdraw(with_amount)
-        print(with_status)
+        status, result = user.withdraw(with_amount)
         print(f"withdraw amount : {with_amount}")
-        print(f"Current balance : {user.check_balance()}")
+        if status:
+            print(f"Success. Current balance : {result}")
+        else:
+            print(f"Error : {result}")
+
     elif choice == "3":
         print(f"Current balance : {user.check_balance()}")
+
     elif choice == "4":
         print(f"Transaction history : {user.transaction_history()}")
         print("last three transaction.")
         last_three = user.transaction_history()[-3:]
         for i in last_three:
             print(i)
+
     elif choice == "5":
         print("Thank you for using our service!")
         break
+
     else:
         print("Invalid")
 
