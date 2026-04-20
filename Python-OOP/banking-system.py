@@ -87,5 +87,35 @@ print(acc2.get_transaction())
 print(acc2.get_balance())
 
 print(acc1.withdraw(6000))
+
 print(acc2.withdraw(6000))
 
+
+"""
+*** NOTES & DEFINITIONS ***
+
+1. Inheritance:
+   - A mechanism where a new class (child/subclass) derives properties and behaviors (methods) 
+     from an existing class (parent/superclass).
+   - `class SavingsAccount(BankAccount):` and `class CurrentAccount(BankAccount):`
+     Here, SavingsAccount and CurrentAccount inherit from BankAccount. This means they get 
+     `deposit()`, `withdraw()`, `get_balance()`, etc., without rewriting the code!
+   - `super().__init__(name, balance)`: The `super()` function allows a subclass to call methods 
+     from its parent class. Here, it calls the parent's constructor to set up `name`, `_balance`, 
+     and `_transactions` properly.
+
+2. Polymorphism (Method Overriding):
+   - Polymorphism means "many forms". In OOP, it allows subclasses to provide a specific 
+     implementation of a method that is already defined in its parent class.
+   - `withdraw()` in `BankAccount` vs `withdraw()` in `CurrentAccount`: 
+     Both classes have a `withdraw` method, but `CurrentAccount` provides its own specific 
+     implementation (overriding the parent's method) to include the overdraft logic 
+     (`amount > self._balance + self.__overdraft`).
+     When you call `acc2.withdraw()`, Python knows to use the `CurrentAccount` version!
+
+3. Access Modifiers (Protected vs Private):
+   - `self._balance` & `self._transactions`: Changed from double underscore `__` to single 
+     underscore `_`. A single underscore implies the variable is "protected". It shouldn't be 
+     accessed directly from outside the class, but it *is* intended to be accessible to and 
+     modified by subclasses (like SavingsAccount and CurrentAccount).
+"""
