@@ -1,6 +1,3 @@
-
-# Inheritance + Ploymorphism
-
 from datetime import datetime
 
 class BankAccount:
@@ -74,54 +71,35 @@ class CurrentAccount(BankAccount):
         self._transactions.append(transaction)
         return True, self._balance
 
-# acc1 = SavingsAccount("Dhaya", 5000)
-# print(acc1.deposit(5000))
-# print(acc1.withdraw(2000))
-# print(acc1.get_transaction())
-# print(acc1.get_balance())
+class Bank(BankAccount):
+    def __Init__(self, name, balance):
+        super().__init__(name, balance)
+        self.accounts = []
 
-# acc2 = CurrentAccount("Dhaya", 5000)
-# print(acc2.deposit(5000))
-# print(acc2.withdraw(2000))
-# print(acc2.get_transaction())
-# print(acc2.get_balance())
+    def create_account(self, name, balance, acc_type):
+        if acc_type == "Savings":
+            acc = SavingsAccount(name, balance)
+        elif acc_type == "Current":
+            acc = CurrentAccount(name, balance)
+        else:
+            return False, "Invalid Accoiunt Type"
+        self.accounts.append(acc)
+        return True, acc
 
-# print(acc1.withdraw(6000))
+    def get_account(self, name):
+        for acc in self.accounts:
+            if acc.name == name:
+                return acc
+        return None
 
-# print(acc2.withdraw(6000))
+bank = Bank("Dhaya", 5000)
+bank.create_account("user1", 5000, "Savings")
+bank.create_account("user2", 5000, "Current")
 
-accounts = [SavingsAccount("Dhaya", 5000), CurrentAccount("Joe", 5000)]
+user1 = bank.get_account("user1")
+user2 = bank.get_account("user2")
 
-for acc in accounts:
-    status, result = acc.withdraw(6000)
-    print(acc.name, status, result)
-
-
-"""
-*** NOTES & DEFINITIONS ***
-
-1. Inheritance:
-   - A mechanism where a new class (child/subclass) derives properties and behaviors (methods) 
-     from an existing class (parent/superclass).
-   - `class SavingsAccount(BankAccount):` and `class CurrentAccount(BankAccount):`
-     Here, SavingsAccount and CurrentAccount inherit from BankAccount. This means they get 
-     `deposit()`, `withdraw()`, `get_balance()`, etc., without rewriting the code!
-   - `super().__init__(name, balance)`: The `super()` function allows a subclass to call methods 
-     from its parent class. Here, it calls the parent's constructor to set up `name`, `_balance`, 
-     and `_transactions` properly.
-
-2. Polymorphism (Method Overriding):
-   - Polymorphism means "many forms". In OOP, it allows subclasses to provide a specific 
-     implementation of a method that is already defined in its parent class.
-   - `withdraw()` in `BankAccount` vs `withdraw()` in `CurrentAccount`: 
-     Both classes have a `withdraw` method, but `CurrentAccount` provides its own specific 
-     implementation (overriding the parent's method) to include the overdraft logic 
-     (`amount > self._balance + self.__overdraft`).
-     When you call `acc2.withdraw()`, Python knows to use the `CurrentAccount` version!
-
-3. Access Modifiers (Protected vs Private):
-   - `self._balance` & `self._transactions`: Changed from double underscore `__` to single 
-     underscore `_`. A single underscore implies the variable is "protected". It shouldn't be 
-     accessed directly from outside the class, but it *is* intended to be accessible to and 
-     modified by subclasses (like SavingsAccount and CurrentAccount).
-"""
+print(user1.deposit(5000))
+print(user2.withdraw(5000))
+print(user1.get_transaction())
+print(user2.get_transaction())
