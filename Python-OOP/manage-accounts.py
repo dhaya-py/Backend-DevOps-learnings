@@ -72,7 +72,7 @@ class CurrentAccount(BankAccount):
         return True, self._balance
 
 class Bank(BankAccount):
-    def __Init__(self, name, balance):
+    def __init__(self, name, balance):
         super().__init__(name, balance)
         self.accounts = []
 
@@ -93,8 +93,17 @@ class Bank(BankAccount):
         return None
 
 bank = Bank("Dhaya", 5000)
-bank.create_account("user1", 5000, "Savings")
-bank.create_account("user2", 5000, "Current")
+status, rsult = bank.create_account("user1", 5000, "Savings")
+if status:
+    print(f"Account created successfully: {rsult}")
+else:
+    print(f"Failed to create account: {rsult}")
+
+status, rsult = bank.create_account("user2", 5000, "Current")
+if status:
+    print(f"Account created successfully: {rsult}")
+else:
+    print(f"Failed to create account: {rsult}")
 
 user1 = bank.get_account("user1")
 user2 = bank.get_account("user2")
