@@ -91,8 +91,6 @@ class Bank():
 
     def get_account(self, acc_id):
         acc = self.accounts.get(acc_id)
-        if acc is None:
-            return "Account not found"
         return acc
 
     def get_account_info(self, acc_id):
@@ -126,21 +124,27 @@ class Bank():
         if not status:
             return False, {"message" : result, "data": None}
         return True, {"message" : "Withdrawal successful", "data": result}
+
+    def get_balance(self, acc_id):
+        acc = self.get_account(acc_id)
+        if acc is None:
+            return False, {"message" : "Account not found", "data": None}
+        return True, {"message" : "Account balance", "data": acc.get_balance()}
     
     def transfer(self, from_acc_id, to_acc_id, amount):
         from_acc = self.get_account(from_acc_id)
-        if not from_acc:
+        if from_acc is None:
             return False, {"message" : "From account not found", "data": None}
         to_acc = self.get_account(to_acc_id)
-        if not to_acc:
+        if to_acc is None:
             return False, {"message" : "To account not found", "data": None}
 
         status, result = from_acc.withdraw(amount)
-        if not status:
+        if status is False:
             return False, {"message" : result, "data": None}
 
         status, result = to_acc.deposit(amount)
-        if not status:
+        if status is False:
             from_acc.deposit(amount)
             return False, {"message" : result, "data": None}
         return True, {"message" : "Transfer successful", "data": result}
