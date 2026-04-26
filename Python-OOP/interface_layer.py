@@ -142,8 +142,8 @@ class Bank():
         status, result = to_acc.deposit(amount)
         if not status:
             from_acc.deposit(amount)
-            return False, result
-        return True, result
+            return False, {"message" : result, "data": None}
+        return True, {"message" : "Transfer successful", "data": result}
 
     def statement(self, acc_id):
         acc = self.get_account(acc_id)
