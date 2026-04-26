@@ -95,3 +95,48 @@ Here, I document the Python Banking System I've built, the code architectures I'
 
 4. **The Abstraction Rule**
    - *Model:* "Use methods, don't touch internals." Always write code against the interface, not the concrete implementation.
+
+
+---
+
+## API Layer Integration (FastAPI)
+
+### What I Have Built So Far
+- **End-to-End API Backend**: Successfully connected FastAPI to the Interface Layer (Bank).
+- **Exposed Endpoints**: Built functioning endpoints handling HTTP requests for account creation, deposits, withdrawals, transfers, and statements.
+
+### System Workflow & Request Flow
+- **The Core Backend Request Flow**: Client -> HTTP request -> Uvicorn -> FastAPI -> Interface Layer (Bank) -> Response.
+- **FastAPI Controller**: Extracts inputs automatically from the request and injects values into the mapped function.
+- **Routing**: Maps a URL and HTTP method directly to a Python function.
+
+### Key Notes & Definitions
+- **FastAPI Fundamentals**: Initializes the API application, serving as the central controller. Exposes Python functions over HTTP.
+- **Data Safety Rule**: 
+  - Internal: Use strict objects or None.
+  - External: Use structured responses (JSON/Dictionaries).
+
+### Issues Faced & How They Were Handled
+1. **Issue:** AttributeError: 'str' object has no attribute 'deposit'
+   - Cause: get_account() was returning a string ("Account not found") when an account didn't exist. Later, to_acc.deposit() crashed because it tried to call .deposit() on that string.
+   - Handling: Changed internal logic to return predictable types (object or None). Validated the object via "if acc is None:" before calling methods on it.
+
+2. **Issue:** SyntaxError: unterminated string literal
+   - Cause: A malformed string declaration.
+   - Handling: Fixed the syntax error, reinforcing that small syntactical mistakes can crash the entire backend server.
+
+### Mental Models Developed
+1. **The Layered Backend System**
+   - Model: A robust system separates concerns across layers: API Layer -> Service Layer -> Business Logic -> Data.
+2. **Control Flow Isolation**
+   - Model: FastAPI's role is strictly routing requests, not handling business logic.
+3. **Data Safety Boundaries**
+   - Model: Internal communications should use objects or None, while external API responses must use structured data.
+4. **Error Anticipation**
+   - Model: Never assume a successful operation. Always validate objects before utilizing them.
+
+### Current Skill Assessment & Focus Areas
+- Strong: Python basics, Object-Oriented Programming.
+- Clear: Backend request flows, FastAPI fundamentals.
+- Emerging: Real-world backend architecture.
+- Focus Areas: Proper API structure (files, modules), request validation (Pydantic), proper HTTP status codes, robust error handling, and data persistence (Database).
