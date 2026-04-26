@@ -90,39 +90,70 @@ class Bank():
         return True, f"Account created successfully. Account id is A{len(self.accounts)}"
 
     def get_account(self, acc_id):
-        if acc_id in self.accounts:
-            return True, self.accounts.get(acc_id)
-        return False, "Account not found"
+        acc = self.accounts.get(acc_id)
+        if acc is None:
+            return "Account not found"
+        return acc
+
+    def get_account_info(self, acc_id):
+        acc = self.get_account(acc_id)
+        if not acc:
+            return False, "Account not found"
+        return True, {
+            "message" : "Account found",
+            "account_id" : acc_id,
+            "name" : acc.name,
+            "balance" : acc.get_balance()
+        }
 
     def deposit(self, acc_id, amount):
-        status, acc = self.get_account(acc_id)
+        acc = self.get_account(acc_id)
+        if not acc:
+            return False, {"message" : "Account not found", "data": None}
+        
+        status, result = acc.deposit(amount)
         if not status:
-            return False, acc
-        return acc.deposit(amount)
+            return False, {"message" : result, "data": None}
+        return True, {"message" : "Deposit successful", "data": result}
+            
 
     def withdraw(self, acc_id, amount):
-        status, acc = self.get_account(acc_id)
+        acc = self.get_account(acc_id)
+        if not acc:
+            return False, {"message" : "Account not found", "data": None}
+        
+        status, result = acc.withdraw(amount)
         if not status:
-            return False, acc
-        return acc.withdraw(amount)
+            return False, {"message" : result, "data": None}
+        return True, {"message" : "Withdrawal successful", "data": result}
     
     def transfer(self, from_acc_id, to_acc_id, amount):
-        status, from_acc = self.get_account(from_acc_id)
-        if not status:
-            return False, from_acc
-        status, to_acc = self.get_account(to_acc_id)
-        if not status:
-            return False, to_acc
+        from_acc = self.get_account(from_acc_id)
+        if not from_acc:
+            return False, {"message" : "From account not found", "data": None}
+        to_acc = self.get_account(to_acc_id)
+        if not to_acc:
+            return False, {"message" : "To account not found", "data": None}
 
         status, result = from_acc.withdraw(amount)
         if not status:
-            return False, result
+            return False, {"message" : result, "data": None}
 
         status, result = to_acc.deposit(amount)
         if not status:
             from_acc.deposit(amount)
             return False, result
-        return True, "Transfer successful"
+        return True, result
+
+    def statement(self, acc_id):
+        acc = self.get_account(acc_id)
+        if not acc:
+            return False, "Account not found"
+        return True, {
+            "message" : "Statement of the account",
+            "transactions" : acc.get_transaction(),
+            "balance" : acc.get_balance()
+        }
         
 
 bank = Bank()
@@ -132,9 +163,38 @@ print(bank.deposit("A1", 5000))
 print(bank.withdraw("A2", 5000))
 print(bank.transfer("A1","A2", 5000))
 
-print(bank.get_account("A1"))
-print(bank.get_account("A2"))
-print(bank.get_account("A3"))
+print(bank.get_account_info("A2"))
+print(bank.statement("A2"))
+
+
+
+
+"""
+
+1. Interface Layer - Why we need it?
+Imagine giving a customer direct access to the engine room of a bank.
+
+No customer should ever interact directly with a SavingsAccount object.
+
+The Bank class acts as a safe "Interface Layer" or "Facade".
+
+It shields the customer from the complexity of different account types and enforces rules.
+
+2. How it strengthens the system
+Never touch internal objects directly:
+The interface layer ensures all operations pass through standardized methods (deposit, withdraw).
+
+No accidental breaches:
+The private __overdraft attribute is protected. Only CurrentAccount's own methods can touch it.
+
+Consistent responses:
+Every method now returns the same structure: (Boolean Success, Data/Error).
+
+This makes it predictable for whatever is calling it (like a UI or another program).
+
+Rollback safety:
+In transfer, if the second step fails, we automatically reverse the first step. This is critical for data integrity.
+"""
 
 
 """
@@ -168,4 +228,221 @@ print(bank.get_account("A3"))
   3. Attempts deposit into the receiver. 
   4. Rollback: If the deposit fails, refunds the withdrawn amount back to the sender.
 ================================================================================
+"""
+
+
+
+
+
+
+
+"""
+
+.
+
+FINAL CLEAN NOTES
+1. CORE OOP CONCEPTS (REFINED)
+
+Encapsulation
+
+Control access to data, don’t expose internals
+
+_balance → protected (by convention)
+__overdraft → private (name mangling)
+
+Access only via methods:
+deposit(), withdraw(), get_balance()
+
+Inheritance
+Reuse and extend behavior
+
+SavingsAccount → BankAccount  
+CurrentAccount → BankAccount
+
+Polymorphism (REAL understanding)
+
+Same method, different behavior based on object
+
+withdraw() behaves differently for:
+- SavingsAccount
+- CurrentAccount (overdraft logic)
+
+Abstraction (CRITICAL)
+
+Hide internal complexity, expose simple interface
+
+Wrong:
+
+acc._balance
+acc._transactions
+
+Correct:
+
+acc.deposit()
+acc.withdraw()
+
+Composition
+
+“Has-a” relationship
+
+Bank HAS accounts
+
+2. INTERFACE LAYER (MOST IMPORTANT)
+Definition
+
+Interface layer = how the outside world interacts with your system
+
+Structure:
+User → Bank → Account → Data
+Responsibilities:
+Bank:
+create account
+store accounts
+find accounts
+perform operations
+Account:
+business logic (deposit, withdraw)
+
+Rule:
+
+User should NEVER interact with account objects directly
+
+3. SYSTEM WORKFLOW
+
+Account Creation
+User → Bank.create_account()
+      ↓
+Bank creates object
+      ↓
+Stores in dictionary
+      ↓
+Returns account_id
+
+Deposit / Withdraw
+User → Bank.deposit(account_id)
+      ↓
+Bank finds account
+      ↓
+Calls acc.deposit()
+      ↓
+Returns result
+
+Transfer
+User → Bank.transfer(A1, A2)
+      ↓
+Bank finds both accounts
+      ↓
+Withdraw from A1
+      ↓
+Deposit to A2
+      ↓
+Rollback if failure
+
+Statement
+User → Bank.statement()
+      ↓
+Returns safe data (not object)
+
+4. KEY DESIGN DECISIONS
+Separation of concerns
+Method	Role
+get_account()	internal (returns object)
+get_account_info()	external (safe data)
+
+Return format (STANDARDIZED)
+
+(True, {"message": "...", "data": ...})
+(False, {"message": "...", "data": None})
+
+Internal vs External
+
+Type	Purpose
+Object	internal logic
+Dict	external response
+
+5. ISSUES YOU FACED (IMPORTANT)
+Issue 1: AttributeError (method not found)
+
+Cause:
+
+Calling methods that don’t exist
+
+Fix:
+
+Ensure correct class owns method
+
+Issue 2: tuple has no attribute deposit
+
+Cause:
+
+get_account() returned (True, data)
+
+Fix:
+
+Separate:
+internal → object
+external → dict
+
+Issue 3: Breaking abstraction
+
+Cause:
+
+accessing __transactions directly
+
+Fix:
+
+Use methods only
+
+Issue 4: Inconsistent return types
+
+Cause:
+
+mixing string / dict / int
+
+Fix:
+
+standardized response format
+
+Issue 5: Wrong mental model
+
+Cause:
+
+assuming variables store copies
+
+Fix:
+
+Python stores references
+
+6. MENTAL MODELS (VERY IMPORTANT)
+
+Model 1: Reference Model
+
+Bank.accounts → holds references (not copies)
+
+Modifying object = modifying original
+
+Model 2: Layered System
+
+User → Interface (Bank) → Logic (Account) → Data
+
+Model 3: Responsibility
+
+Bank = controller  
+Account = logic  
+Data = state
+
+Model 4: Abstraction Rule
+
+“Use methods, don’t touch internals”
+
+Model 5: System Thinking
+
+Before:
+
+objects
+
+Now:
+
+system
+
 """
