@@ -135,3 +135,37 @@ print(bank.transfer("A1","A2", 5000))
 print(bank.get_account("A1"))
 print(bank.get_account("A2"))
 print(bank.get_account("A3"))
+
+
+"""
+================================================================================
+# OOP Concepts & Implementation Notes: Bank Interface Layer
+================================================================================
+
+--- 1. Definitions & Concepts ---
+* Encapsulation: Restricting direct access to data.
+  - Protected (_balance): Intended as private, but accessible in subclasses.
+  - Private (__overdraft): Strictly hidden, preventing accidental external modification.
+* Inheritance: Creating specialized classes from a base class.
+  - SavingsAccount and CurrentAccount inherit core logic from BankAccount.
+* Polymorphism (Method Overriding): Modifying inherited behavior.
+  - CurrentAccount overrides the `withdraw` method to handle overdraft limits.
+* Facade Pattern / Interface Layer: Providing a simplified, unified interface.
+  - The `Bank` class acts as an interface, handling account retrieval and delegating tasks to specific account objects.
+
+--- 2. Workflows ---
+* Account Creation (Bank.create_account):
+  1. Instantiates a Savings or Current account based on `acc_type`.
+  2. Generates a unique ID (e.g., "A1") and stores the object in `self.accounts`.
+
+* Unified Transactions (Bank.deposit / Bank.withdraw):
+  1. Fetches the target account object using its ID.
+  2. Delegates the operation to the object's specific `deposit` or `withdraw` method.
+
+* Inter-Account Transfer (Bank.transfer):
+  1. Validates the existence of both the sender and receiver accounts.
+  2. Attempts withdrawal from the sender. Aborts if it fails.
+  3. Attempts deposit into the receiver. 
+  4. Rollback: If the deposit fails, refunds the withdrawn amount back to the sender.
+================================================================================
+"""
