@@ -1,6 +1,7 @@
+
 import sys
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 # Add parent directory to path to allow importing from sibling folders
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -11,6 +12,31 @@ from PythonOOPs.interface_layer import Bank
 app = FastAPI()
 bank = Bank()
 
+# HELPER FUNCTION FOR ERROR HANDLING
+
+def handle_error(result):
+  error = result["error"]
+
+  if error == "ACCOUNT_NOT_FOUND":
+    raise HTTPException(status_code=404, detail=result["error"])
+
+  if error == "INVALID_ACCOUNT_TYPE":
+    raise HTTPException(status_code=400, detail=result["error"])
+
+  if error == "INSUFFICIENT_BALANCE":
+    raise HTTPException(status_code=400, detail=result["error"])
+
+  if error == "INVALID_AMOUNT":
+    raise HTTPException(status_code=400, detail=result["error"])
+
+  if error == "FROM_ACCOUNT_NOT_FOUND":
+    raise HTTPException(status_code=404, detail=result["error"])
+
+  if error == "TO_ACCOUNT_NOT_FOUND":
+    raise HTTPException(status_code=404, detail=result["error"])
+
+  raise HTTPException(status_code=500, detail="Internal Server Error")
+
 @app.get("/")
 def home():
     return {"message" : "FastAPI is running!"}
@@ -18,31 +44,52 @@ def home():
 
 @app.post("/create-account")
 def create_account(request : CreateAccount):
-    return bank.create_account(request.name, request.balance, request.acc_type)
+    status, result =  bank.create_account(request.name, request.balance, request.acc_type)
+    if not status:
+      handle_error(result)
+    return result
 
 @app.get("/get-account-info")
 def get_account_info(account_id : str):
-    return bank.get_account_info(account_id)
+    status, result = bank.get_account_info(account_id)
+    if not status:
+      handle_error(result)
+    return result
 
 @app.post("/deposit")
 def deposit(request : Deposit):
-    return bank.deposit(request.account_id, request.amount)
+    status, result = bank.deposit(request.account_id, request.amount)
+    if not status:
+      handle_error(result)
+    return result
 
 @app.post("/withdraw")
 def withdraw(request : Withdraw):
-    return bank.withdraw(request.account_id, request.amount)
+    status, result = bank.withdraw(request.account_id, request.amount)
+    if not status:
+      handle_error(result)
+    return result
 
 @app.get("/get-balance")
 def get_balance(account_id : str):
-    return bank.get_balance(account_id)
+    status, result = bank.get_balance(account_id)
+    if not status:
+      handle_error(result)
+    return result
 
 @app.post("/transfer")
 def transfer(request : Transfer):
-    return bank.transfer(request.from_acc_id, request.to_acc_id, request.amount)
+    status, result = bank.transfer(request.from_acc_id, request.to_acc_id, request.amount)
+    if not status:
+      handle_error(result)
+    return result
 
 @app.get("/statement")
 def statement(account_id : str):
-    return bank.statement(account_id)
+    status, result = bank.statement(account_id)
+    if not status:
+      handle_error(result)
+    return result
 
 
 """

@@ -79,15 +79,15 @@ class Bank():
         self.accounts = {}
 
     def create_account(self, name, balance, acc_type):
-        if acc_type == "Savings":
+        if acc_type == "Savings" or acc_type == "savings":
             acc = SavingsAccount(name, balance)
             self.accounts[f"A{len(self.accounts)+1}"] = acc
-        elif acc_type == "Current":
+        elif acc_type == "Current" or acc_type =="current":
             acc = CurrentAccount(name, balance)
             self.accounts[f"A{len(self.accounts)+1}"] = acc
         else:
-            return False, "Invalid Account type"
-        return True, f"Account created successfully. Account id is A{len(self.accounts)}"
+            return False, {"error" : "INVALID_ACCOUNT_TYPE"}
+        return True, {"message" : f"Account created successfully. Account id is {len(self.accounts)}"}
 
     def get_account(self, acc_id):
         acc = self.accounts.get(acc_id)
@@ -96,7 +96,7 @@ class Bank():
     def get_account_info(self, acc_id):
         acc = self.get_account(acc_id)
         if not acc:
-            return False, "Account not found"
+            return False, {"error" : "ACCOUNT_NOT_FOUND"}
         return True, {
             "message" : "Account found",
             "account_id" : acc_id,
@@ -107,52 +107,52 @@ class Bank():
     def deposit(self, acc_id, amount):
         acc = self.get_account(acc_id)
         if not acc:
-            return False, {"message" : "Account not found", "data": None}
+            return False, {"error" : "ACCOUNT_NOT_FOUND"}
         
         status, result = acc.deposit(amount)
         if not status:
-            return False, {"message" : result, "data": None}
+            return False, {"error" : "INVALID_AMOUNT"}
         return True, {"message" : "Deposit successful", "data": result}
             
 
     def withdraw(self, acc_id, amount):
         acc = self.get_account(acc_id)
         if not acc:
-            return False, {"message" : "Account not found", "data": None}
+            return False, {"error" : "ACCOUNT_NOT_FOUND"} 
         
         status, result = acc.withdraw(amount)
         if not status:
-            return False, {"message" : result, "data": None}
+            return False, {"error" : "INSUFFICIENT_BALANCE"}
         return True, {"message" : "Withdrawal successful", "data": result}
 
     def get_balance(self, acc_id):
         acc = self.get_account(acc_id)
         if acc is None:
-            return False, {"message" : "Account not found", "data": None}
+            return False, {"error" : "ACCOUNT_NOT_FOUND"}
         return True, {"message" : "Account balance", "data": acc.get_balance()}
     
     def transfer(self, from_acc_id, to_acc_id, amount):
         from_acc = self.get_account(from_acc_id)
         if from_acc is None:
-            return False, {"message" : "From account not found", "data": None}
+            return False, {"error" : "FROM_ACCOUNT_NOT_FOUND"}
         to_acc = self.get_account(to_acc_id)
         if to_acc is None:
-            return False, {"message" : "To account not found", "data": None}
+            return False, {"error" : "TO_ACCOUNT_NOT_FOUND"}
 
         status, result = from_acc.withdraw(amount)
         if status is False:
-            return False, {"message" : result, "data": None}
+            return False, {"error" : "INSUFFICIENT_BALANCE"}
 
         status, result = to_acc.deposit(amount)
         if status is False:
             from_acc.deposit(amount)
-            return False, {"message" : result, "data": None}
+            return False, {"error" : "INVALID_AMOUNT"}
         return True, {"message" : "Transfer successful", "data": result}
 
     def statement(self, acc_id):
         acc = self.get_account(acc_id)
         if not acc:
-            return False, "Account not found"
+            return False, {"error" : "ACCOUNT_NOT_FOUND"}
         return True, {
             "message" : "Statement of the account",
             "transactions" : acc.get_transaction(),
