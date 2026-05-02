@@ -1,5 +1,12 @@
+import sys
+import os
 from fastapi import FastAPI
-from interface_layer import Bank
+
+# Add parent directory to path to allow importing from sibling folders
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from schema import CreateAccount, Deposit, Withdraw, Transfer
+from PythonOOPs.interface_layer import Bank
 
 app = FastAPI()
 bank = Bank()
@@ -10,28 +17,28 @@ def home():
 
 
 @app.post("/create-account")
-def create_account(name : str, balance : float, acc_type : str):
-    return bank.create_account(name, balance, acc_type)
+def create_account(request : CreateAccount):
+    return bank.create_account(request.name, request.balance, request.acc_type)
 
 @app.get("/get-account-info")
 def get_account_info(account_id : str):
     return bank.get_account_info(account_id)
 
 @app.post("/deposit")
-def deposit(account_id : str, amount : float):
-    return bank.deposit(account_id, amount)
+def deposit(request : Deposit):
+    return bank.deposit(request.account_id, request.amount)
 
 @app.post("/withdraw")
-def withdraw(account_id : str, amount : float):
-    return bank.withdraw(account_id, amount)
+def withdraw(request : Withdraw):
+    return bank.withdraw(request.account_id, request.amount)
 
 @app.get("/get-balance")
 def get_balance(account_id : str):
     return bank.get_balance(account_id)
 
-@app.get("/transfer")
-def transfer(from_acc_id : str, to_acc_id : str, amount : float):
-    return bank.transfer(from_acc_id, to_acc_id, amount)
+@app.post("/transfer")
+def transfer(request : Transfer):
+    return bank.transfer(request.from_acc_id, request.to_acc_id, request.amount)
 
 @app.get("/statement")
 def statement(account_id : str):
