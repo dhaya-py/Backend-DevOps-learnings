@@ -10,8 +10,6 @@ class BankAccount:
         self._transactions = []
 
     def deposit(self, amount):
-        if amount <= 0:
-            return False, "invalid amount"
         self._balance += amount
         transaction = {
             "id" : f"T{len(self._transactions)+1}",
@@ -23,8 +21,6 @@ class BankAccount:
         return True, self._balance
         
     def withdraw(self, amount):
-        if amount <= 0:
-            return False, "invalid amount"
         if amount > self._balance:
             return False, "Insufficient balance"           
         self._balance -= amount
@@ -60,8 +56,6 @@ class CurrentAccount(BankAccount):
         self.__overdraft = overdraft
 
     def withdraw(self, amount):
-        if amount <= 0:
-            return False, "Invalid amount"
         if amount > self._balance + self.__overdraft:
             return False, "Insufficient balance. overdraft limit exceeded"
         self._balance -= amount
